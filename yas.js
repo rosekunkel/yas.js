@@ -74,7 +74,7 @@ Yas = (function() {
     var hexPattern = '(?:-?0x[0-9a-fA-F]+)';
     var numericPattern = '(?:' + decimalPattern + '|' + hexPattern + ')';
     var addressPattern =
-        '(?:(' + numericPattern + ')?\(' + registerPattern + '\)' + ')';
+        '(?:(' + numericPattern + ')?\\((' + registerPattern + ')\\))';
     var spacePattern = '(?:\\s+)';
     var commaPattern = '(?:\\s*,\\s*)';
     var commentPattern = '(?:#.*)';
@@ -123,8 +123,7 @@ Yas = (function() {
         regRegInstructionPattern + '|' +
         irmovlPattern + '|' +
         rmmovlPattern + '|' +
-        mrmovlPattern + '|' +
-        irmovlPattern +
+        mrmovlPattern + 
         '))';
     var linePattern =
         '^\\s*' +
@@ -145,7 +144,7 @@ Yas = (function() {
                 (val & 0xff000000) >> 24];
     }
 
-    function ParseException(message) {
+    my.ParseException = function (message) {
         this.message = message;
     }
 
@@ -162,16 +161,18 @@ Yas = (function() {
         if (lines !== null) {
             // Scan for labels first
             lines.forEach(function(line, index, array) {
+                console.log(line);
                 var lineMatches = line.match(new RegExp(linePattern));
 
                 if (lineMatches === null) {
-                    throw new ParseException('Invalid line');
+                    console.log(mrmovlPattern);
+                    throw new my.ParseException('Invalid line');
                 }
 
                 var label = lineMatches[1];
                 if (label !== undefined) {
                     if (labels[label] !== undefined) {
-                        throw new ParseException('Redefining label');
+                        throw new my.ParseException('Redefining label');
                     }
 
                     // We don't know what the address is yet
@@ -183,7 +184,7 @@ Yas = (function() {
                 var lineMatches = line.match(new RegExp(linePattern));
 
                 if (lineMatches === null) {
-                    throw new ParseException('Invalid line');
+                    throw new my.ParseException('Invalid line');
                 }
 
                 var label = lineMatches[1];
@@ -217,7 +218,7 @@ Yas = (function() {
                     var labelParam = instructionMatches[2];
 
                     if (labels[labelParam] === undefined) {
-                        throw new ParseException('Label undefined');
+                        throw new my.ParseException('Label undefined');
                     }
 
                     var addr = labels[labelParam];
@@ -258,7 +259,7 @@ Yas = (function() {
                         var labelParam = instructionMatches[2];
 
                         if (labels[labelParam] == undefined) {
-                            throw new ParseException('Label undefined');
+                            throw new my.ParseException('Label undefined');
                         }
 
                         value = labels[labelParam];
@@ -292,7 +293,8 @@ Yas = (function() {
                     fullOpcode = opcodeStart.concat(intToByteArray(offsetValue));
                     opcodeSize = fullOpcode.length;
                 } else if (instructionMatches = instruction.
-                           match(new RegExp(rmmovlPattern))) {
+                           match(new RegExp(mrmovlPattern))) {
+                    console.log('parsing an mrmovl');
                     var opcode = opcodes['mrmovl'];
                     var regParam1 = instructionMatches[2];
                     var regParam2 = instructionMatches[3];
@@ -534,7 +536,7 @@ Yas = (function() {
 
                 var addr = this.registers[regs[1]] + offset;
 
-                this.registers[regs[0]] = this.memory.subarray(addr, addr + 4);
+                this.registers[regs[0]] = byteArrayToInt(this.memory.subarray(addr, addr + 4));
 
                 this.programCounter += 6;
                 break;
@@ -722,6 +724,8 @@ Yas = (function() {
 
                 if ((this.flags.sign !== this.flags.overflow) || this.flags.zero) {
                     this.programCounter = addr;
+                } else {
+                    this.programCounter += 5;
                 }
 
                 break;
@@ -730,6 +734,8 @@ Yas = (function() {
 
                 if (this.flags.sign !== this.flags.overflow) {
                     this.programCounter = addr;
+                } else {
+                    this.programCounter += 5;
                 }
 
                 break;
@@ -738,6 +744,8 @@ Yas = (function() {
 
                 if (this.flags.zero) {
                     this.programCounter = addr;
+                } else {
+                    this.programCounter += 5;
                 }
 
                 break;
@@ -746,6 +754,8 @@ Yas = (function() {
 
                 if (!this.flags.zero) {
                     this.programCounter = addr;
+                } else {
+                    this.programCounter += 5;
                 }
 
                 break;
@@ -754,6 +764,8 @@ Yas = (function() {
 
                 if (this.flags.sign === this.flags.overflow) {
                     this.programCounter = addr;
+                } else {
+                    this.programCounter += 5;
                 }
 
                 break;
@@ -762,6 +774,8 @@ Yas = (function() {
 
                 if ((this.flags.sign === this.flags.overflow) && !this.flags.zero) {
                     this.programCounter = addr;
+                } else {
+                    this.programCounter += 5;
                 }
 
                 break;

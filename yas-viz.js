@@ -5,7 +5,14 @@ $(document).ready(function () {
 	var renderHex = false;
 
 	function renderCodeAsTable(code) {
-		$('#code').empty().append($('<tbody></tbody>'));
+		$('#code').empty()
+			.append($('<thead />')
+					.append($('<tr />')
+							.append($('<th />').text('Line Number'))
+							.append($('<th />').text('Address'))
+							.append($('<th />').text('Opcode'))
+							.append($('<th />').text('Source'))))
+			.append($('<tbody/>'));
 
 		function opcodeArrayToString(opcodeArray) {
 			var str = '';
@@ -23,17 +30,25 @@ $(document).ready(function () {
 
 		code.forEach(function (line, index) {
 			console.log(line.opcode);
-			var row = $('<tr></tr>');
-			var lineNumber = $('<td></td>').append((index + 1).toString());
-			var address = $('<td></td>').append('0x' + line.address.toString(16));
-			var opcode = $('<td></td>')
+			var row = $('<tr />');
+			var lineNumber = $('<td />').attr('class', 'assembledLineNum').text((index + 1).toString());
+			var address = $('<td />').attr('class', 'assembledAddress').text('0x' + line.address.toString(16));
+			var opcode = $('<td />').attr('class', 'assembledOpcode')
 			if (line.opcode !== null) {
-				opcode.append('0x' + opcodeArrayToString(line.opcode));
+				opcode.text('0x' + opcodeArrayToString(line.opcode));
 			}
-			var source = $('<td></td>').append($('<code></code>').append(line.source));
+			var source = $('<td />').attr('class', 'assembledSource').append($('<code />').text(line.source));
 			row = row.append(lineNumber).append(address).append(opcode).append(source);
 			$('#code > tbody').append(row);
 		});
+	}
+
+	function highlightLine(addr) {
+		$('.highlightedLine').removeClass('highlightedLine');
+
+		$('#code tr').filter(function () {
+			return $('.assembledAddress', this).text() === '0x' + addr.toString(16);
+		}).last().addClass('highlightedLine');
 	}
 
 	function numToPreferredString(num) {
@@ -275,6 +290,8 @@ $(document).ready(function () {
 			}));
 		}
 
+		highlightLine(virtualMachine.programCounter);
+
 		refreshSVG();
 
 		var bbox = $('#memoryDiagram').get(0).getBBox();
@@ -285,19 +302,20 @@ $(document).ready(function () {
 	}
 
 	$('body').on('click', '#assemble', function (event) {
-		try {
-			$('#pre-assemble').hide();
-			$('#post-assemble').show();
-			assembledCode = Yas.assemble(editor.getValue());
+			$('#preAssemble').hide();
+			$('#postAssemble').show();
+			try {
+				assembledCode = Yas.assemble(editor.getValue());
+			} catch (e) {
+				if (e instanceof Yas.ParseException) {
+					console.log(e.message);
+					throw e;
+				}
+			}
 			renderCodeAsTable(assembledCode);
-			vm = new Yas.VM(assembledCode, function () {return prompt("Need input");});
+			vm = new Yas.VM(assembledCode, function () {return prompt("The program needs input.");});
 			console.log(vm);
 			updateVisualization(vm);
-		} catch (e) {
-			event.preventDefault();
-			throw e;
-		}
-		event.preventDefault();
 	});
 
 	$('body').on('click', '#advance', function (event) {
@@ -318,9 +336,9 @@ $(document).ready(function () {
 	});
 
 	$('body').on('click', '#edit', function (event) {
-			$('#pre-assemble').show();
-			$('#post-assemble').hide();
+			$('#preAssemble').show();
+			$('#postAssemble').hide();
 	});
 
-	$('#post-assemble').hide();
+	$('#postAssemble').hide();
 });

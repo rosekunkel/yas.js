@@ -1,4 +1,109 @@
+html, body {
+	height: 100%;
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	text-align: center;
+}
+
+#content {
+	text-align: left;
+	min-width: 600px;
+	display: inline-block;
+	height: 100vh;
+	position: relative;
+}
+
+h1 {
+	height: 60px;
+	line-height: 60px;
+	text-align: center;
+	padding: 0;
+	margin: 0;
+}
+
+#preAssemble {
+	position: relative;
+	margin: 0 auto;
+	display: block;
+	height: calc(100% - 60px - 20px);
+	background-color: #fbc010;
+}
+
+#postAssemble {
+	margin: 0 auto;
+	background-color: #fbc010;
+	padding: 20px;
+	display: inline-block;
+}
+
+#diagramWrapper {
+	position: relative;
+	padding: 20px;
+	background-color: white;
+	border: 1px solid black;
+	margin: 0;
+}
+
 #editor {
-	width: 400px;
-	height: 200px;
+	position: absolute;
+	top: 0;
+	bottom: 50px;
+	left: 0;
+	right: 0;
+	border: 1px solid black;
+	margin: 20px;
+}
+
+#assemble {
+	position: absolute;
+	margin: 20px;
+	right: 0;
+	bottom: 0;
+}
+
+#code {
+	background-color: white;
+	width: 100%;
+	border: 1px solid black;
+	border-collapse: collapse;
+}
+
+#code td,
+#code th {
+	padding: 2px 10px;
+}
+
+.highlightedLine {
+	background-color: rgba(0, 0, 0, 0.07);
+}
+
+#advance, #edit, #toggleHex {
+	float: right;
+}
+
+#output {
+	margin: 0;
+	padding: 10px 20px;
+	display: block;
+	min-height: 1em;
+	background-color: white;
+	border: 1px solid black;
+}
+
+h2 {
+	clear: both;
+	height: 60px;
+	line-height: 60px;
+	margin: 0;
+	padding: 0;
+}
+
+button {
+	height: 30px;
+	padding: 0 10px;
+	margin: 20px 0;
+	border: 1px solid black;
 }
