@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<meta charset="UTF-8" />
+	<meta http-equiv="Cache-Control" content="no-store" />
+	<title>y86 Assembly Visualizer</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+	<script src="yas.js"></script>
+	<script src="yas-viz.js"></script>
+  </head>
+  <body>
+	<form id="sourceCode">
+	  <textarea></textarea>
+	  <input type="submit" value="Assemble" />
+	</form>
+	<table id="code"></table>
+	<svg id="memoryDiagram"></svg>
+	<pre id="output"></pre>
+	<button id="advance">Advance</button>
+	<button id="toggleHex">Hexadecimal</button>
+  </body>
+</html>
