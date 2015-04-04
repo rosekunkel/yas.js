@@ -138,10 +138,10 @@ Yas = (function() {
     }
 
     function intToByteArray(val) {
-        return [(val & 0x000000ff) >> 0,
-                (val & 0x0000ff00) >> 8,
-                (val & 0x00ff0000) >> 16,
-                (val & 0xff000000) >> 24];
+        return [(val & 0x000000ff) >>> 0,
+                (val & 0x0000ff00) >>> 8,
+                (val & 0x00ff0000) >>> 16,
+                (val & 0xff000000) >>> 24];
     }
 
     my.ParseException = function (message) {
@@ -410,7 +410,7 @@ Yas = (function() {
         }
 
         function unpackRegisters(packedRegisters) {
-            var reg1 = packedRegisters >> 4;
+            var reg1 = packedRegisters >>> 4;
             var reg2 = packedRegisters & 0x0f;
 
             console.log(reg1)
