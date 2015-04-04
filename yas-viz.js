@@ -286,6 +286,8 @@ $(document).ready(function () {
 
 	$('body').on('click', '#assemble', function (event) {
 		try {
+			$('#pre-assemble').hide();
+			$('#post-assemble').show();
 			assembledCode = Yas.assemble(editor.getValue());
 			renderCodeAsTable(assembledCode);
 			vm = new Yas.VM(assembledCode, function () {return prompt("Need input");});
@@ -314,4 +316,11 @@ $(document).ready(function () {
 
 		updateVisualization(vm);
 	});
+
+	$('body').on('click', '#edit', function (event) {
+			$('#pre-assemble').show();
+			$('#post-assemble').hide();
+	});
+
+	$('#post-assemble').hide();
 });

@@ -10,16 +10,20 @@
 	<link rel="stylesheet" type="text/css" href="yas-viz.css">
   </head>
   <body>
-	<div id="editor"></div>
-	<button id="assemble">Assemble</button>
-	<table id="code"></table>
-	<div class="refreshSVG">
-	  <svg id="memoryDiagram"></svg>
-	</div>
-	<pre id="output"></pre>
-	<button id="advance">Advance</button>
-	<button id="toggleHex">Hexadecimal</button>
-
+	<section id="pre-assemble">
+	  <div id="editor"></div>
+	  <button id="assemble">Assemble</button>
+	</section>
+	<section id="post-assemble">
+	  <table id="code"></table>
+	  <button id="edit">Edit</button>
+	  <div class="refreshSVG">
+		<svg id="memoryDiagram"></svg>
+	  </div>
+	  <pre id="output"></pre>
+	  <button id="advance">Advance</button>
+	  <button id="toggleHex">Hexadecimal</button>
+	</section>
 	<script src="ace-builds/src-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
   </body>
 </html>
