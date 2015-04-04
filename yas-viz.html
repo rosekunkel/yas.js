@@ -7,16 +7,19 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 	<script src="yas.js"></script>
 	<script src="yas-viz.js"></script>
+	<link rel="stylesheet" type="text/css" href="yas-viz.css">
   </head>
   <body>
-	<form id="sourceCode">
-	  <textarea></textarea>
-	  <input type="submit" value="Assemble" />
-	</form>
+	<div id="editor"></div>
+	<button id="assemble">Assemble</button>
 	<table id="code"></table>
-	<svg id="memoryDiagram"></svg>
+	<div class="refreshSVG">
+	  <svg id="memoryDiagram"></svg>
+	</div>
 	<pre id="output"></pre>
 	<button id="advance">Advance</button>
 	<button id="toggleHex">Hexadecimal</button>
+
+	<script src="ace-builds/src-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
   </body>
 </html>

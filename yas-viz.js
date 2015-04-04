@@ -1,4 +1,5 @@
 $(document).ready(function () {
+	var editor = ace.edit("editor");
 	var assembledCode = null;
 	var vm = null;
 	var renderHex = false;
@@ -43,8 +44,10 @@ $(document).ready(function () {
 		}
 	}
 
-	function rerenderPage() {
-		$('body').html($('body').html());
+	function refreshSVG() {
+		$('.refreshSVG').each(function () {
+			$(this).html($(this).html());
+		});
 	}
 
 	function calcMaxTextWidth(strings, attributes) {
@@ -56,7 +59,12 @@ $(document).ready(function () {
 		}
 
 		var max = 0;
-		$('<svg />').attr('id', 'calcTextWidthTempSVG').appendTo('body');
+		$('<div />').attr({
+			'id' : 'calcTextWidthTempDiv',
+			'class' : 'refreshSVG'
+		}).appendTo('body');
+
+		$('<svg />').attr('id', 'calcTextWidthTempSVG').appendTo($('#calcTextWidthTempDiv'));
 
 		strings.forEach(function (str) {
 			$('<text />')
@@ -65,7 +73,7 @@ $(document).ready(function () {
 				.append(str)
 				.appendTo($('#calcTextWidthTempSVG'));
 
-			rerenderPage();
+			refreshSVG();
 
 			var textWidth = $('#calcTextWidthTempText').get(0).getComputedTextLength();
 			max = textWidth > max ? textWidth : max;
@@ -73,7 +81,7 @@ $(document).ready(function () {
 			$('#calcTextWidthTempText').remove();
 		});
 
-		$('#calcTextWidthTempSVG').remove();
+		$('#calcTextWidthTempDiv').remove();
 
 		this.cache[key] = max;
 		return max;
@@ -267,7 +275,7 @@ $(document).ready(function () {
 			}));
 		}
 
-		rerenderPage();
+		refreshSVG();
 
 		var bbox = $('#memoryDiagram').get(0).getBBox();
 		$('#memoryDiagram').attr({
@@ -276,9 +284,9 @@ $(document).ready(function () {
 		});
 	}
 
-	$('body').on('submit', '#sourceCode', function (event) {
+	$('body').on('click', '#assemble', function (event) {
 		try {
-			assembledCode = Yas.assemble($('textarea', this).val());
+			assembledCode = Yas.assemble(editor.getValue());
 			renderCodeAsTable(assembledCode);
 			vm = new Yas.VM(assembledCode, function () {return prompt("Need input");});
 			console.log(vm);
