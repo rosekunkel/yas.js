@@ -50,9 +50,11 @@ $(document).ready(function () {
 			return $('.assembledAddress', this).text() === '0x' + addr.toString(16);
 		}).last().addClass('highlightedLine');
 
-		$('#codeContainer').scrollTo($('.highlightedLine'), {
-			offset : -80
-		});
+		if ($('.highlightedLine').length !== 0) {
+			$('#codeContainer').scrollTo($('.highlightedLine'), {
+				offset : -80
+			});
+		}
 	}
 
 	function numToPreferredString(num) {
