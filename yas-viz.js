@@ -8,7 +8,7 @@ $(document).ready(function () {
 		$('#code').empty()
 			.append($('<thead />')
 					.append($('<tr />')
-							.append($('<th />').text('Line Number'))
+							.append($('<th />').text('#'))
 							.append($('<th />').text('Address'))
 							.append($('<th />').text('Opcode'))
 							.append($('<th />').text('Source'))))
@@ -49,6 +49,10 @@ $(document).ready(function () {
 		$('#code tr').filter(function () {
 			return $('.assembledAddress', this).text() === '0x' + addr.toString(16);
 		}).last().addClass('highlightedLine');
+
+		$('#codeContainer').scrollTo($('.highlightedLine'), {
+			offset : -80
+		});
 	}
 
 	function numToPreferredString(num) {
