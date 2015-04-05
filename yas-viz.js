@@ -346,5 +346,10 @@ $(document).ready(function () {
 			$('#postAssemble').hide();
 	});
 
+	$('body').on('click', '#clear', function (event) {
+		editor.setValue('');
+	});
+
+
 	$('#postAssemble').hide();
 });
