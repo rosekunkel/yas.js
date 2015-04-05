@@ -825,7 +825,7 @@ Yas = (function() {
             case 'wrch':
                 var regs = unpackRegisters(this.memory[this.programCounter + 1]);
 
-                this.ouptut += String.fromCharCode(this.registers[regs[0]]);
+                this.output += String.fromCharCode(this.registers[regs[0]]);
                 this.programCounter += 2;
 
                 break;
