@@ -96,10 +96,11 @@ Yas = (function() {
     // Matches a number in either decimal or hexadecimal format
     var numericPattern = '(?:' + decimalPattern + '|' + hexPattern + ')';
 
-    // Matches addresses of the format offset(register). Note that this pattern
-    // captures the offset and register.
+    // Matches addresses of the format offset(register) or as labels. Note that
+    // this pattern captures the label, offset, and register
     var addressPattern =
-        '(?:(' + numericPattern + ')?\\((' + registerPattern + ')\\))';
+        '(?:(' + labelPattern + ')|(?:(' +
+        numericPattern + ')?\\((' + registerPattern + ')\\)))';
 
     // Matches any non-zero amount of whitespace
     var spacePattern = '(?:\\s+)';
@@ -376,47 +377,106 @@ Yas = (function() {
                            match(new RegExp(rmmovlPattern))) {
                     var opcode = opcodes['rmmovl'];
                     var regParam1 = instructionMatches[1];
-                    var regParam2 = instructionMatches[3];
-                    var offset = instructionMatches[2];
-                    var offsetVal;
 
-                    // An offset doesn't have to be provided for the address. If
-                    // it isn't, the offset is assumed to be 0.
-                    if (offset === undefined) {
-                        offsetVal = 0;
-                    } else if (offset.match(new RegExp(hexPattern))) {
-                        offsetVal = parseInt(offset, 16);
+                    // Check if we have a label or an address
+                    if (instructionMatches[2] !== undefined) {
+                        var labelParam = instructionMatches[2];
+                        // Make sure that they aren't trying to use a label
+                        // which doesn't exist
+                        if (labels[labelParam] === undefined) {
+                            throw new my.ParseException('Label undefined');
+                        }
+
+                        var addr = labels[labelParam];
+
+                        // We might not know the address of the label yet. In
+                        // this case, just record it, and set the address offset
+                        // to include the full size of an address
+                        if (addr instanceof MissingAddress) {
+                            fullOpcode = [opcode,
+                                          packRegisters(regParam1, 'none'),
+                                          addr];
+                            addressOffset = 6;
+                        } else {
+                            fullOpcode = [opcode,
+                                          packRegisters(regParam1, 'none')]
+                                .concat(intToByteArray(addr));
+                            addressOffset = fullOpcode.length;
+                        }
                     } else {
-                        offsetVal = parseInt(offset, 10);
-                    }
+                        var regParam2 = instructionMatches[4];
+                        var offset = instructionMatches[3];
+                        var offsetVal;
 
-                    var opcodeStart = [opcode,
-                                       packRegisters(regParam1, regParam2)];
-                    fullOpcode = opcodeStart.concat(intToByteArray(offsetVal));
-                    addressOffset = fullOpcode.length;
+                        // An offset doesn't have to be provided for the
+                        // address. If it isn't, the offset is assumed to be 0.
+                        if (offset === undefined) {
+                            offsetVal = 0;
+                        } else if (offset.match(new RegExp(hexPattern))) {
+                            offsetVal = parseInt(offset, 16);
+                        } else {
+                            offsetVal = parseInt(offset, 10);
+                        }
+
+                        // Yes, mrmovl expects its registers in reverse order
+                        var opcodeStart = [opcode,
+                                           packRegisters(regParam1, regParam2)];
+                        fullOpcode =
+                            opcodeStart.concat(intToByteArray(offsetVal));
+                        addressOffset = fullOpcode.length;
+                    }
                 } else if (instructionMatches = instruction.
                            match(new RegExp(mrmovlPattern))) {
                     var opcode = opcodes['mrmovl'];
-                    var regParam1 = instructionMatches[2];
-                    var regParam2 = instructionMatches[3];
-                    var offset = instructionMatches[1];
-                    var offsetVal;
+                    var regParam2 = instructionMatches[4];
 
-                    // An offset doesn't have to be provided for the address. If
-                    // it isn't, the offset is assumed to be 0.
-                    if (offset === undefined) {
-                        offsetVal = 0;
-                    } else if (offset.match(new RegExp(hexPattern))) {
-                        offsetVal = parseInt(offset, 16);
+                    // Check if we have a label or an address
+                    if (instructionMatches[1] !== undefined) {
+                        var labelParam = instructionMatches[1];
+                        // Make sure that they aren't trying to use a label
+                        // which doesn't exist
+                        if (labels[labelParam] === undefined) {
+                            throw new my.ParseException('Label undefined');
+                        }
+
+                        var addr = labels[labelParam];
+
+                        // We might not know the address of the label yet. In
+                        // this case, just record it, and set the address offset
+                        // to include the full size of an address
+                        if (addr instanceof MissingAddress) {
+                            fullOpcode = [opcode,
+                                          packRegisters(regParam2, 'none'),
+                                          addr];
+                            addressOffset = 6;
+                        } else {
+                            fullOpcode = [opcode,
+                                          packRegisters(regParam2, 'none')]
+                                .concat(intToByteArray(addr));
+                            addressOffset = fullOpcode.length;
+                        }
                     } else {
-                        offsetVal = parseInt(offset, 10);
-                    }
+                        var regParam1 = instructionMatches[3];
+                        var offset = instructionMatches[2];
+                        var offsetVal;
 
-                    // Yes, mrmovl expects its registers in reverse order
-                    var opcodeStart = [opcode,
-                                       packRegisters(regParam2, regParam1)];
-                    fullOpcode = opcodeStart.concat(intToByteArray(offsetVal));
-                    addressOffset = fullOpcode.length;
+                        // An offset doesn't have to be provided for the
+                        // address. If it isn't, the offset is assumed to be 0.
+                        if (offset === undefined) {
+                            offsetVal = 0;
+                        } else if (offset.match(new RegExp(hexPattern))) {
+                            offsetVal = parseInt(offset, 16);
+                        } else {
+                            offsetVal = parseInt(offset, 10);
+                        }
+
+                        // Yes, mrmovl expects its registers in reverse order
+                        var opcodeStart = [opcode,
+                                           packRegisters(regParam2, regParam1)];
+                        fullOpcode =
+                            opcodeStart.concat(intToByteArray(offsetVal));
+                        addressOffset = fullOpcode.length;
+                    }
                 } else if (instructionMatches = instruction.
                            match(new RegExp(directivePattern))) {
                     var directive = instructionMatches[1];
@@ -655,7 +715,11 @@ Yas = (function() {
                 var offset = byteArrayToInt(this.memory.subarray(
                     this.programCounter + 2, this.programCounter + 6));
 
-                var addr = this.registers[regs[1]] + offset;
+                if (regs[1] !== 'none') {
+                    var addr = this.registers[regs[1]] + offset;
+                } else {
+                    var addr = offset;
+                }
 
                 this.memory.set(intToByteArray(this.registers[regs[0]]), addr);
 
@@ -669,7 +733,11 @@ Yas = (function() {
                     this.memory.subarray(this.programCounter + 2,
                                          this.programCounter + 6));
 
-                var addr = this.registers[regs[1]] + offset;
+                if (regs[1] !== 'none') {
+                    var addr = this.registers[regs[1]] + offset;
+                } else {
+                    var addr = offset;
+                }
 
                 this.registers[regs[0]] =
                     byteArrayToInt(this.memory.subarray(addr, addr + 4));
