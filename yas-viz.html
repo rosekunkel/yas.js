@@ -1,39 +1,39 @@
 <!DOCTYPE html>
 <html>
   <head>
-	<meta charset="UTF-8" />
-	<meta http-equiv="Cache-Control" content="no-store" />
-	<title>y86 Assembly Visualizer</title>
-	<link rel="stylesheet" type="text/css" href="yas-viz.css">
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/jquery.scrollto/2.1.0/jquery.scrollTo.min.js"></script>
-	<script src="ace-builds/src-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
-	<script src="yas.js"></script>
-	<script src="yas-viz.js"></script>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Cache-Control" content="no-store" />
+    <title>y86 Assembly Visualizer</title>
+    <link rel="stylesheet" type="text/css" href="yas-viz.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/jquery.scrollto/2.1.0/jquery.scrollTo.min.js"></script>
+    <script src="ace-builds/src-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script src="yas.js"></script>
+    <script src="yas-viz.js"></script>
   </head>
   <body>
-	<section id="content">
-	  <h1>y86 Assembly Visualizer</h1>
-	  <section id="preAssemble">
-		<div id="editor"></div>
-		<button id="clear">Clear</button>
-		<button id="assemble">Assemble</button>
-	  </section>
-	  <section id="postAssemble">
-		<h2>Code</h2>
-		<div id="codeContainer">
-		  <table id="code"></table>
-		</div>
-		<button id="edit">Edit</button>
-		<h2>Output</h2>
-		<pre id="output"></pre>
-		<h2>Memory Diagram</h2>
-		<button id="toggleHex">Hexadecimal</button>
-		<button id="advance">Advance</button>
-		<div id="diagramWrapper" class="refreshSVG">
-		  <svg id="memoryDiagram"></svg>
-		</div>
-	  </section>
-	</section>
+    <section id="content">
+      <h1>y86 Assembly Visualizer</h1>
+      <section id="preAssemble">
+        <div id="editor"></div>
+        <button id="clear">Clear</button>
+        <button id="assemble">Assemble</button>
+      </section>
+      <section id="postAssemble">
+        <h2>Code</h2>
+        <div id="codeContainer">
+          <table id="code"></table>
+        </div>
+        <button id="edit">Edit</button>
+        <h2>Output</h2>
+        <pre id="output"></pre>
+        <h2>Memory Diagram</h2>
+        <button id="toggleHex">Hexadecimal</button>
+        <button id="advance">Advance</button>
+        <div id="diagramWrapper" class="refreshSVG">
+          <svg id="memoryDiagram"></svg>
+        </div>
+      </section>
+    </section>
   </body>
 </html>
