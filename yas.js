@@ -191,6 +191,8 @@ Yas = (function() {
         '\\s*' +
         '(?:' + commentPattern + ')?$';
 
+    console.log(linePattern);
+
     // Takes two register names and produces a byte in which the high nibble
     // represents the first register and the low nibble represents the second
     // register
@@ -209,8 +211,8 @@ Yas = (function() {
 
     // Define and export a class which represents an exception caused by a
     // failure to parse a program
-    my.ParseException = function (message) {
-        this.message = message;
+    my.ParseException = function (errors) {
+        this.errors = errors;
     }
 
     // Define a class which represents a label that should be replaced by an
@@ -226,15 +228,19 @@ Yas = (function() {
         var result = []; // The resulting array
         var address = 0; // The address of the current instruction
         var labels = {}; // A mapping of labels to addresses
+        var errors = [];
 
         // Split the source code into lines
-        var lines = source.match(/[^\r\n]+/g);
+        var lines = source.match(/^.*(?=(?:\r\n|\n|\r)|$)/gm);
 
         // Make sure we don't break if the input is empty
         if (lines !== null) {
             // We make a pass through the source before fully parsing so that we
             // can determine all of the labels that are defined in the program
-            lines.forEach(function(line) {
+            lines.forEach(function(line, lineNumber) {
+                // Arrays are zero-indexed, but lines start at 1
+                ++lineNumber;
+
                 // Match the line against our line pattern so that we can
                 // extract its label, if it has one
                 var lineMatches = line.match(new RegExp(linePattern));
@@ -242,7 +248,11 @@ Yas = (function() {
                 // If the line didn't match, the input is invalid, so we have to
                 // stop parsing
                 if (lineMatches === null) {
-                    throw new my.ParseException('Invalid line');
+                    errors.push({
+                        message: 'parsing failed',
+                        lineNumber: lineNumber
+                    });
+                    return;
                 }
 
                 // Try to extract a label from the line
@@ -250,8 +260,11 @@ Yas = (function() {
                 if (label !== undefined) {
                     // Make sure that the label has not already been used
                     if (labels[label] !== undefined) {
-                        throw new my.ParseException("Redefining label '" +
-                                                    label + "'");
+                        errors.push({
+                            message: 'label "' + label + '" is already defined',
+                            lineNumber: lineNumber
+                        });
+                        return;
                     }
 
                     // Add the label to our map. We don't know what its address
@@ -261,7 +274,17 @@ Yas = (function() {
             });
 
             // Now we can properly parse the program
-            lines.forEach(function(line) {
+            lines.forEach(function(line, lineNumber) {
+                // Arrays are zero-indexed, but lines start at 1
+                ++lineNumber;
+
+                // If the line is broken, there's no point in parsing it
+                if (errors.find(function(error) {
+                    return error.lineNumber === lineNumber;
+                }) !== undefined) {
+                    return;
+                }
+
                 // Again try to extract a label from the line. This time, we
                 // know that its address will be the current address, so we can
                 // update its value
@@ -308,7 +331,12 @@ Yas = (function() {
                     // Make sure that they aren't trying to use a label which
                     // doesn't exist
                     if (labels[labelParam] === undefined) {
-                        throw new my.ParseException('Label undefined');
+                        errors.push({
+                            message: 'label "' + labelParam +
+                                '" used but never defined',
+                            lineNumber: lineNumber
+                        });
+                        return;
                     }
 
                     var addr = labels[labelParam];
@@ -356,7 +384,12 @@ Yas = (function() {
                         // Again, the label may not exist, so we need to deal
                         // with that
                         if (labels[labelParam] == undefined) {
-                            throw new my.ParseException('Label undefined');
+                            errors.push({
+                                message: 'label "' + labelParam +
+                                    '" used but never defined',
+                                lineNumber: lineNumber
+                            });
+                            return;
                         }
 
                         value = labels[labelParam];
@@ -384,7 +417,12 @@ Yas = (function() {
                         // Make sure that they aren't trying to use a label
                         // which doesn't exist
                         if (labels[labelParam] === undefined) {
-                            throw new my.ParseException('Label undefined');
+                            errors.push({
+                                message: 'label "' + labelParam +
+                                    '" used but never defined',
+                                lineNumber: lineNumber
+                            });
+                            return;
                         }
 
                         var addr = labels[labelParam];
@@ -436,7 +474,12 @@ Yas = (function() {
                         // Make sure that they aren't trying to use a label
                         // which doesn't exist
                         if (labels[labelParam] === undefined) {
-                            throw new my.ParseException('Label undefined');
+                            errors.push({
+                                message: 'label "' + labelParam +
+                                    '" used but never defined',
+                                lineNumber: lineNumber
+                            });
+                            return;
                         }
 
                         var addr = labels[labelParam];
@@ -519,6 +562,10 @@ Yas = (function() {
                              source : line});
                 address += addressOffset;
             });
+
+            if (errors.length !== 0) {
+                throw new my.ParseException(errors);
+            }
 
             // Now that we know the address of each label, we need to go through
             // the result and replace all the MissingAddress objects with actual

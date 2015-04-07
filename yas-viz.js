@@ -397,21 +397,39 @@ $(document).ready(function () {
 
     // Bind the assemble button to assembling the code
     $('body').on('click', '#assemble', function (event) {
-        $('#preAssemble').hide();
-        $('#postAssemble').show();
+        var assemblyFailed = false;
         try {
             assembledCode = Yas.assemble(editor.getValue());
         } catch (e) {
             if (e instanceof Yas.ParseException) {
-                console.log(e.message);
+                assemblyFailed = true;
+                e.errors.forEach(function (error) {
+                    $('<div />').addClass('assembleError')
+                        .append($('<p />')
+                                .text('line ' + error.lineNumber +
+                                      ': ' + error.message))
+                        .appendTo($('body'))
+                        .dialog({
+                            title: 'Assemble Error',
+                            minHeight: 0,
+                            close: function() {
+                                $(this).remove();
+                            }
+                        });
+                });
+            } else {
+                throw e;
             }
-            throw e;
         }
-        renderCodeAsTable(assembledCode);
-        vm = new Yas.VM(assembledCode, function () {
-            return prompt("The program needs input.");});
-        console.log(vm);
-        updateVisualization(vm);
+
+        if (!assemblyFailed) {
+            $('#preAssemble').hide();
+            $('#postAssemble').show();
+            renderCodeAsTable(assembledCode);
+            vm = new Yas.VM(assembledCode, function () {
+                return prompt("The program needs input.");});
+            updateVisualization(vm);
+        }
     });
 
     // Bind the advance button to advancing the VM and updating the diagram

@@ -130,3 +130,34 @@ button {
     margin: 20px 0;
     border: 1px solid black;
 }
+
+.ui-widget-header {
+    border: none;
+    border-bottom: 1px solid black;
+    background: #fbc010;
+}
+
+.ui-corner-all {
+    border-radius: 0;
+}
+
+.ui-widget-content {
+    border: 1px solid black;
+}
+
+.ui-dialog {
+    padding: 0;
+}
+
+
+.ui-state-default,
+.ui-widget-content .ui-state-default,
+.ui-widget-header .ui-state-default,
+.ui-state-hover,
+.ui-widget-content .ui-state-hover,
+.ui-widget-header .ui-state-hover,
+.ui-state-focus,
+.ui-widget-content .ui-state-focus,
+.ui-widget-header .ui-state-focus {
+    border: 1px solid black;
+}
